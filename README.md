@@ -1,5 +1,5 @@
 ### Regex Sudoku
-- Desenvolvido por: **Alan Reis Anjos** e **Luiz Gustavo**
+- Desenvolvido por: **Alan Reis Anjos** e **Luiz Gustavo Freire de Carvalho**
 ---
 ### Sobre o Projeto
 -
