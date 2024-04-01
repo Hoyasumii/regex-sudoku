@@ -8,7 +8,7 @@ import re
 from utils import isValidRegex, clearString
 
 class RegexSudoku:
-  _available: bool = False
+  available: bool = False
   rows: list[str] = []
   columns: list[str] = []
   content: list[list[Union[str, None]]] = None
@@ -29,23 +29,18 @@ class RegexSudoku:
       
     return True
   
-  def _generateContent(self) -> None:
-    self.content = [ [None] * self.MATRIX_LENGTH ] * self.MATRIX_LENGTH
-
   def __init__(self, alphabet: list[str],matrixLength: int = 2) -> None:
     self.MATRIX_LENGTH = matrixLength
 
     self._alphabetValidator(alphabet)
 
     self.alphabet = alphabet
-    self._generateContent()
-    self.content = [ [None, "A"], ["B", "C"] ]
+    self.generateContent()
   
-  def settingControls(self, *data: list[list[str]]) -> bool:
-    
-    if (len(data) != self.MATRIX_LENGTH):
-      return False
-
+  def generateContent(self) -> None:
+    self.content = [ [None] * self.MATRIX_LENGTH ] * self.MATRIX_LENGTH
+  
+  def settingControls(self, *data: list[list[str]]) -> bool:    
     for controls in data:
       if (len(controls) != self.MATRIX_LENGTH):
         return False
@@ -63,11 +58,11 @@ class RegexSudoku:
         else:
           self.columns.append(item)
 
-    self._available = True
+    self.available = True
     return True
   
   def build(self) -> None:
-    if (not self._available):
+    if (not self.available):
       raise Exception("Os controles ainda não foram definidos.")
     displayableContent = []
 
@@ -80,13 +75,20 @@ class RegexSudoku:
     if (index > self.MATRIX_LENGTH - 1 or index < 0):
       raise Exception("Linha inválida")
     
-    return "".join(self.content[index])
+    return "".join([ item for item in self.content[index] if item is not None])
 
   def getColumnContent(self, index: int) -> str:
     if (index > self.MATRIX_LENGTH - 1 or index < 0):
       raise Exception("Coluna inválida")
     
     return "".join([ item[index] if item[index] is not None else "" for item in self.content ])
+  
+  def getEmptyPosition(self) -> Union[list[int], None]:
+    for row in range(len(self.content)):
+      for column in range(len(self.content)):
+        if (self.content[row][column] is None):
+          return [row, column]
+    return None
 
   def insert(self, row: int, column: int, content: str) -> bool:
     content = content.upper()
@@ -104,7 +106,10 @@ class RegexSudoku:
     if (self.content[row][column] != None):
       return False
     
-    self.content[row][column] = content
+    selectedRow = self.content[row].copy()
+    selectedRow[column] = content
+    self.content[row] = selectedRow
+
     return True
   
   def hasEmptyPlaces(self) -> bool:
@@ -119,18 +124,24 @@ class RegexSudoku:
       rowPattern = re.compile(self.rows[item])
       columnPattern = re.compile(self.columns[item])
 
+      if (len(self.getRowContent(item)) < self.MATRIX_LENGTH):
+        return False
+      if (len(self.getColumnContent(item)) < self.MATRIX_LENGTH):
+        return False
+
       if rowPattern.fullmatch(self.getRowContent(item)) is None:
-            return False
+        return False
       if columnPattern.fullmatch(self.getColumnContent(item)) is None:
-          return False
+        return False
     
     return True
   
 if __name__=="__main__":
   app = RegexSudoku(["A", "B", "C"], 2)
-  app.settingControls(["A*", ("(B|C)*")], ["AB", "[CA]*"])
+  app.settingControls(["A*", "(B|C)*"], ["AB", "[CA]*"])
   # print(app.getRowContent(1))
   app.insert(0, 0, "A")
   # print(app.getColumnContent(0))
   print(app.checkWin())
   app.build()
+  #[CA]*
