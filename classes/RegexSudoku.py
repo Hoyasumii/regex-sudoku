@@ -1,5 +1,6 @@
 from tabulate import tabulate
 from typing import Union
+import re
 from utils import isValidRegex, clearString
 
 class RegexSudoku:
@@ -15,8 +16,17 @@ class RegexSudoku:
       if (len(alphabet[index]) != 1):
         raise Exception("As letras do alfabeto devem ter apenas 1 de comprimento")
       
-  def _valideControl(self):
-    pass
+  def _valideControl(self, pattern: str) -> bool:
+    pattern = list(clearString(pattern))
+
+    for item in pattern:
+      if (not item in self.alphabet):
+        return False
+      
+    return True
+  
+  def _generateContent(self) -> None:
+    self.content = [ [None] * self.MATRIX_LENGTH ] * self.MATRIX_LENGTH
 
   def __init__(self, alphabet: list[str],matrixLength: int = 2) -> None:
     self.MATRIX_LENGTH = matrixLength
@@ -24,7 +34,7 @@ class RegexSudoku:
     self._alphabetValidator(alphabet)
 
     self.alphabet = alphabet
-    self.content = [ [None] * self.MATRIX_LENGTH ] * self.MATRIX_LENGTH
+    self._generateContent()
     self.content = [ [None, "A"], ["B", "C"] ]
   
   def settingControls(self, *data: list[list[str]]) -> bool:
@@ -37,6 +47,9 @@ class RegexSudoku:
         return False
       
       for item in controls:
+        if (not self._valideControl(item)):
+          return False
+
         if (not isValidRegex(item)):
           return False
         
@@ -72,22 +85,48 @@ class RegexSudoku:
     return "".join([ item[index] if item[index] is not None else "" for item in self.content ])
 
   def insert(self, row: int, column: int, content: str) -> bool:
-    #TODO: Verificar se o content além de ter len de 1, ele também está no alfabeto 
+    content = content.upper()
+
     for index in [row, column]:
       if (index > self.MATRIX_LENGTH - 1 or index < 0):
         raise Exception("Posição inválida")
+
+    if (len(content) != 1):
+      return False
+
+    if (not content in self.alphabet):
+      return False
 
     if (self.content[row][column] != None):
       return False
     
     self.content[row][column] = content
     return True
+  
+  def hasEmptyPlaces(self) -> bool:
+    for row in self.content:
+      for item in row:
+        if (item is None):
+          return True
+    return False
+  
+  def checkWin(self) -> bool:
+    for item in range(self.MATRIX_LENGTH):
+      rowPattern = re.compile(self.rows[item])
+      columnPattern = re.compile(self.columns[item])
+
+      if rowPattern.fullmatch(self.getRowContent(item)) is None:
+            return False
+      if columnPattern.fullmatch(self.getColumnContent(item)) is None:
+          return False
     
+    return True
   
 if __name__=="__main__":
   app = RegexSudoku(["A", "B", "C"], 2)
   app.settingControls(["A*", ("(B|C)*")], ["AB", "[CA]*"])
-  print(app.getRowContent(1))
-  print(app.getColumnContent(0))
+  # print(app.getRowContent(1))
   app.insert(0, 0, "A")
+  # print(app.getColumnContent(0))
+  print(app.checkWin())
   app.build()
