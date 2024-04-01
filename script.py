@@ -40,10 +40,10 @@ while not app.available:
   setupPartTwo()
   del setupPartTwo._values
 
-  data = [[item.upper() for key, item in setupPartTwo.values.items() if key.startswith("0")], [item.upper() for key, item in setupPartTwo.values.items() if key.startswith("1")]]
+  data = [[item.upper() for key, item in setupPartTwo.values.items() if key.startswith("1")], [item.upper() for key, item in setupPartTwo.values.items() if key.startswith("0")]]
 
   app.settingControls(*data)
-
+ 
 while not app.checkWin():
   clear()
   if not app.hasEmptyPlaces():
