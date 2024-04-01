@@ -1,3 +1,7 @@
+if __name__=="__main__":
+  import sys
+  sys.path.append("\\".join(sys.path[0].split('\\')[:-1]))
+
 from tabulate import tabulate
 from typing import Union
 import re
